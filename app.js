@@ -28,19 +28,7 @@ function bank(id) {
   return t.qs.map(q => ({ ...q, topic: id }));
 }
 
-/* writing mini-quizzes */
-const W1Q = [
-  O('Put the words in order.', ['My', 'favourite', 'place', 'at', 'school', 'is', 'the', 'library.']),
-  O('Put the words in order.', ['It', 'is', 'on', 'the', 'second', 'floor.']),
-  O('Put the words in order.', ['My', 'teachers', 'teach', 'us', 'how', 'to', 'draw.']),
-  O('Put the words in order.', ['I', 'feel', 'happy', 'when', 'I', 'am', 'there.']),
-  M('Which sentence tells us WHY you like the place?', 'I like it because it is quiet.', ['It is on the first floor.', 'My favourite place is the library.', 'We read books there.']),
-  M('Which sentence tells us how you FEEL?', 'I feel relaxed when I am there.', ['It is on the third floor.', 'We sing songs there.', 'Our teachers teach us.']),
-  M('My teachers teach us ___ to sing songs.', 'how', ['what', 'who', 'where']),
-  M('We draw pictures ___ computers.', 'using', ['use', 'uses', 'used']),
-  M('How many sentences must you write?', 'at least six', ['one', 'two', 'three']),
-  M('Choose the correct sentence.', 'It is on the ground floor.', ['It is in the ground floor.', 'It is at ground floor.', 'It on the ground floor.']),
-];
+
 
 /* ---------------- state ---------------- */
 const STORE = 'p2eng-v1';
@@ -128,20 +116,20 @@ function home() {
   <div class="grid">${READING.map(r => card(r, r.tag, `${r.type} · Skill: ${r.skill}`)).join('')}</div>
   <div class="section-title"><span class="dot"></span>Writing</div>
   <div class="grid">
-    <button class="topic-card c-lav" id="w1Btn"><div><span class="tag">Writing Task 1</span><h3>My Favourite Place at School</h3><p>Build your paragraph · model · tips</p></div><div class="stars">${starsOf('w1')}</div><span class="pic emo-badge">✏️</span></button>
-    <button class="topic-card c-mint" id="w2Btn"><div><span class="tag">Writing Task 2</span><h3>Places like Home: Rules</h3><p>Rules + reasons · checklist</p></div><div class="stars">${starsOf('w2')}</div><span class="pic emo-badge">🏡</span></button>
+    <button class="topic-card c-lav" data-w="w1"><div><span class="tag">Writing 1 · Part A</span><h3>Part 1: Plan my ideas</h3><p>My Favourite Place at School · 5 questions + feelings</p></div><div class="stars">${starsOf('w1')}</div><span class="pic emo-badge">📝</span></button>
+    <button class="topic-card c-sky" data-w="w2"><div><span class="tag">Writing 1 · Parts B–C</span><h3>Part 2: Write the paragraph</h3><p>Six sentences · format · Fix it!</p></div><div class="stars">${starsOf('w2')}</div><span class="pic emo-badge">✏️</span></button>
+    <button class="topic-card c-mint" data-w="w3"><div><span class="tag">Module 2 · Part C</span><h3>Part 3: Places like home</h3><p>Three places · two rules + reasons · checklist</p></div><div class="stars">${starsOf('w3')}</div><span class="pic emo-badge">🏡</span></button>
   </div>
   <div class="section-title"><span class="dot"></span>Challenges</div>
   <div class="grid">
     <button class="topic-card c-butter" id="mockBtn"><div><span class="tag">25 questions</span><h3>Mock exam</h3><p>Everything mixed together</p></div><div class="stars">${S.best.mock != null ? 'Best: ' + S.best.mock + ' / 25' : ''}</div><span class="pic emo-badge">🏆</span></button>
     <button class="topic-card c-sky" id="spellBtn"><div><span class="tag">10 words</span><h3>Spelling bee</h3><p>Listen, then spell with letter tiles</p></div><div class="stars">${S.best.spell != null ? 'Best: ' + S.best.spell + ' / 10' : ''}</div><span class="pic emo-badge">🐝</span></button>
     <button class="topic-card c-pink" id="listenBtn"><div><span class="tag">10 questions</span><h3>Listen &amp; choose</h3><p>Hear a word, pick the right one</p></div><div class="stars">${S.best.listen != null ? 'Best: ' + S.best.listen + ' / 10' : ''}</div><span class="pic emo-badge">👂</span></button>
-    <button class="topic-card c-lav" id="mistakeBtn"><div><span class="tag">${S.mistakes.length} questions</span><h3>Mistake book</h3><p>Try your mistakes again</p></div><span class="pic emo-badge">📒</span></button>
+    <button class="topic-card c-lav" id="mistakeBtn"><div><span class="tag">${S.mistakes.length} question${S.mistakes.length === 1 ? '' : 's'}</span><h3>Mistake book</h3><p>Try your mistakes again</p></div><span class="pic emo-badge">📒</span></button>
   </div>
   <p class="foot">Made for revision at home · Cloudy is an original character inspired by soft pastel cartoon style.</p>`);
   app.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { sTap(); topic(b.dataset.topic); });
-  $('#w1Btn').onclick = () => writing1();
-  $('#w2Btn').onclick = () => writing2();
+  app.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { sTap(); WPAGES[b.dataset.w](); });
   $('#mockBtn').onclick = () => startQuiz('mock');
   $('#spellBtn').onclick = () => spelling();
   $('#listenBtn').onclick = () => startQuiz('listen');
@@ -253,89 +241,152 @@ function readingPage(t) {
 }
 
 /* ================= WRITING ================= */
-function writing1() {
-  const W = WRITING.t1;
-  const st = { place: null, floor: null, acts: [], feel: null };
-  const t = { title: 'My Favourite Place at School', emo: '✏️', col: 'c-lav' };
-  const { html: mhtml, segs } = readerHTML([{ title: 'My Favourite Place at School', type: "Teacher's model", lines: W.model }]);
-  view(`${head(t, 'Writing Task 1 · ' + W.module)}
-  <div class="learn-card"><h4><span class="n">1</span>Answer these questions first</h4><ol class="qlist">${W.qs.map(q => `<li class="tap">${esc(q)}</li>`).join('')}</ol></div>
-  <div class="learn-card"><h4><span class="n">2</span>Build your paragraph</h4>
-    <div class="step"><b>Which place?</b><div class="chips" id="cPlace">${W.places.map(([p, e]) => `<button class="chip" data-v="${p}">${e} ${p}</button>`).join('')}</div></div>
-    <div class="step"><b>Which floor?</b><div class="chips" id="cFloor">${W.floors.map(f => `<button class="chip" data-v="${f}">${f}</button>`).join('')}</div></div>
-    <div class="step"><b>What do you and your classmates do there? (choose two)</b><div class="chips" id="cActs"><span class="muted">Choose a place first.</span></div></div>
-    <div class="step"><b>How do you feel there?</b><div class="chips" id="cFeel">${W.feels.map(f => `<button class="chip" data-v="${f}">${f}</button>`).join('')}</div></div>
-    <div class="out" id="out"><span class="muted">Your paragraph will appear here.</span></div>
-    <div class="center"><button class="pill next" id="readOut">🔈 Read my paragraph</button></div>
-  </div>
-  <div class="learn-card"><h4><span class="n">3</span>Teacher's model</h4><div class="reader">${readerBar()}${mhtml}</div></div>
-  <div class="learn-card"><h4><span class="n">4</span>Writing tips</h4><ul class="tips">${W.tips.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
-  <div class="center"><button class="pill next" id="goQ">Writing quiz (10) →</button></div>`);
-  $('#bk').onclick = home;
-  wireReader(app, segs);
-  app.querySelectorAll('.qlist .tap').forEach(el => el.onclick = () => say(el.textContent));
-  const para = () => {
-    if (!st.place) return '';
-    const P = st.place, s = [];
-    s.push(`My favourite place at school is ${P}.`);
-    s.push(`It is on ${st.floor || '___'}.`);
-    s.push(st.acts.length === 2 ? `My classmates and I ${st.acts[0]} and ${st.acts[1]} there.` : `My classmates and I ${st.acts[0] || '___'} there.`);
-    s.push(`Our teachers ${W.teach[P]}.`);
-    s.push(`I like ${P.replace(/^the /, 'the ')} because ${W.why[P]}.`);
-    s.push(`I feel ${st.feel || '___'} when I am there.`);
-    return s.join(' ');
-  };
+/* ================= WRITING (3 parts) ================= */
+const W1S = S.w1 = Object.assign({ place: null, floor: null, acts: [], teach: 0, why: 0, feel: null }, S.w1 || {});
+const W3S = S.w3 = Object.assign({ places: [], feel: null, rules: {}, checks: {} }, S.w3 || {});
+const WPAGES = { w1: () => writingPlan(), w2: () => writingPara(), w3: () => writingHome() };
+const W1 = WRITING.t1, W2 = WRITING.t2;
+const teachOpts = P => [W1.teach[P], 'help us when we have problems', 'tell us to follow the rules'];
+const whyOpts = P => [W1.why[P], 'it is fun and I can learn a lot', 'I can be with my good friends'];
+function planAnswers() {
+  const P = W1S.place; if (!P) return [];
+  const a = W1S.acts;
+  return [
+    `My favourite place at school is ${P}.`,
+    `It is on ${W1S.floor || '___'}.`,
+    a.length >= 2 ? `My classmates and I ${a[0]}. We also ${a[1]} together.` : `My classmates and I ${a[0] || '___'}.`,
+    `My teachers ${teachOpts(P)[W1S.teach] || teachOpts(P)[0]}.`,
+    `I like ${P} because ${whyOpts(P)[W1S.why] || whyOpts(P)[0]}.`,
+    `I feel ${W1S.feel || '___'} when I am there.`,
+  ];
+}
+const wHead = (emo, col, sub, title) => head({ title, emo, col }, sub);
+const partNav = cur => `<div class="part-nav">${[['w1', 'Part 1', 'Plan'], ['w2', 'Part 2', 'Paragraph'], ['w3', 'Part 3', 'Places like home']].map(([k, p, n]) => `<button class="mode-btn ${k === 'w1' ? 'c-lav' : k === 'w2' ? 'c-sky' : 'c-mint'} ${k === cur ? 'on' : ''}" data-w="${k}"><span><small>${p}</small><br>${n}</span></button>`).join('')}</div>`;
+function wireNav() { app.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { sTap(); WPAGES[b.dataset.w](); }); }
+
+/* ---- Part 1: plan ---- */
+function writingPlan() {
+  view(`${wHead('📝', 'c-lav', 'Writing 1 · Part A · Module 1: Being a Good Child', 'My Favourite Place at School')}
+  ${partNav('w1')}
+  <div class="skill"><b>Part 1: Plan your ideas</b><p>Choose your favourite place at school and answer the five questions (plus your teacher's extra question). Tap a question to hear it.</p></div>
+  <div id="planBox"></div>
+  <div class="learn-card"><h4><span class="n">★</span>What the teacher's red pen teaches us</h4>${W1.teacherTips.map(([t, e]) => `<div class="rule"><b>${t}:</b> <span class="tap">${e}</span></div>`).join('')}</div>
+  <div class="center btn-row"><button class="pill next" id="goQ">Plan quiz (10) →</button><button class="pill c-sky" id="goP2">Next: Part 2, write the paragraph →</button></div>`);
+  $('#bk').onclick = home; wireNav();
+  app.querySelectorAll('.rule .tap').forEach(el => el.onclick = () => say(el.textContent));
   const draw = () => {
-    const sel = (id, vals) => app.querySelectorAll(`#${id} .chip`).forEach(c => c.classList.toggle('on', vals.includes(c.dataset.v)));
-    sel('cPlace', [st.place]); sel('cFloor', [st.floor]); sel('cFeel', [st.feel]); sel('cActs', st.acts);
-    const p = para();
-    $('#out').innerHTML = p ? `<p>${fmt(p)}</p><small>${p.split(/(?<=\.)\s/).length} sentences ✓ · Copy it into your book in your own handwriting.</small>` : '<span class="muted">Your paragraph will appear here.</span>';
+    const P = W1S.place, ans = planAnswers();
+    const chips = (k, list, cur, multi) => `<div class="chips">${list.map((v, i) => { const val = Array.isArray(v) ? v[0] : v, lab = Array.isArray(v) ? `${v[1]} ${v[0]}` : v; const on = multi ? cur.includes(val) : (typeof cur === 'number' ? cur === i : cur === val); return `<button class="chip ${on ? 'on' : ''}" data-k="${k}" data-v="${esc(val)}" data-i="${i}">${esc(lab)}</button>`; }).join('')}</div>`;
+    const body = [
+      chips('place', W1.places, P),
+      chips('floor', W1.floors, W1S.floor),
+      P ? chips('acts', W1.acts[P], W1S.acts, true) : '<span class="muted">Choose a place first.</span>',
+      P ? chips('teach', teachOpts(P), W1S.teach) : '<span class="muted">Choose a place first.</span>',
+      P ? chips('why', whyOpts(P), W1S.why) : '<span class="muted">Choose a place first.</span>',
+      chips('feel', W1.feels, W1S.feel),
+    ];
+    $('#planBox').innerHTML = W1.planQs.map((x, i) => `<div class="learn-card plan">
+      <h4><span class="n">${i + 1}</span><span class="tap q">${esc(x.q)}</span>${i === 5 ? '<span class="red-pen">teacher added</span>' : ''}</h4>
+      ${body[i]}
+      <div class="frame">${ans[i] ? fmt(ans[i]) : `<span class="muted">${esc(x.frame)} ___</span>`}</div>
+      <p class="ptip">💡 ${x.tip}</p></div>`).join('');
+    app.querySelectorAll('.plan .q').forEach(el => el.onclick = () => say(el.textContent));
+    app.querySelectorAll('#planBox .chip').forEach(c => c.onclick = () => {
+      sTap(); const k = c.dataset.k, v = c.dataset.v, i = +c.dataset.i;
+      if (k === 'place') { if (W1S.place !== v) { W1S.place = v; W1S.acts = []; W1S.teach = 0; W1S.why = 0; } }
+      else if (k === 'acts') { const j = W1S.acts.indexOf(v); if (j >= 0) W1S.acts.splice(j, 1); else { W1S.acts.push(v); if (W1S.acts.length > 2) W1S.acts.shift(); } }
+      else if (k === 'teach' || k === 'why') W1S[k] = i;
+      else W1S[k] = v;
+      save(); draw();
+      const f = c.closest('.plan').querySelector('.frame'); if (f) synth(f.textContent);
+    });
   };
-  const wire = (id, fn) => app.querySelectorAll(`#${id} .chip`).forEach(c => c.onclick = () => { sTap(); fn(c.dataset.v); draw(); });
-  wire('cPlace', v => {
-    st.place = v; st.acts = [];
-    $('#cActs').innerHTML = W.acts[v].map(a => `<button class="chip" data-v="${a}">${a}</button>`).join('');
-    wire('cActs', a => { const k = st.acts.indexOf(a); if (k >= 0) st.acts.splice(k, 1); else { st.acts.push(a); if (st.acts.length > 2) st.acts.shift(); } });
-  });
-  wire('cFloor', v => st.floor = v); wire('cFeel', v => st.feel = v);
-  $('#readOut').onclick = () => { const p = para(); p ? synth(p) : popText('Choose a place first!'); };
+  draw();
   $('#goQ').onclick = () => startQuiz('w1');
+  $('#goP2').onclick = writingPara;
 }
 
-function writing2() {
-  const W = WRITING.t2;
-  const t = { title: 'Places like Home: Rules', emo: '🏡', col: 'c-mint' };
-  let place = null; let chosen = [];
-  view(`${head(t, 'Writing Task 2 · ' + W.module)}
-  <div class="skill"><p>${esc(W.intro)}</p></div>
-  <div class="learn-card"><h4><span class="n">1</span>Example: the park 🌳</h4>
-    ${W.example.map((e, i) => `<div class="rule"><div><b>Rule ${i + 1}:</b> <span class="tap">${esc(e[2])}</span></div><div><b>Reason:</b> <span class="tap">${esc(e[3])}</span></div></div>`).join('')}</div>
-  <div class="learn-card"><h4><span class="n">2</span>Make your own rules</h4>
-    <div class="step"><b>Choose a place that feels like home:</b><div class="chips" id="cP">${W.places.map((p, i) => `<button class="chip" data-i="${i}">${p.e} ${p.p}</button>`).join('')}</div></div>
-    <div class="step"><b>Choose TWO rules:</b><div class="chips col" id="cR"><span class="muted">Choose a place first.</span></div></div>
-    <div class="out" id="out"><span class="muted">Your rules will appear here.</span></div>
-    <div class="center"><button class="pill next" id="readOut">🔈 Read my rules</button></div>
+/* ---- Part 2: paragraph ---- */
+function writingPara() {
+  const ans = planAnswers(); const ready = W1S.place && W1S.floor && W1S.acts.length === 2 && W1S.feel;
+  const { html: mhtml, segs } = readerHTML([{ title: 'My Favourite Place at School', type: "Teacher's model", lines: W1.model }]);
+  const d = new Date(); const date = `${d.getDate()}${[, 'st', 'nd', 'rd'][d.getDate() % 10 > 3 || [11, 12, 13].includes(d.getDate()) ? 0 : d.getDate() % 10] || 'th'} ${d.toLocaleString('en-GB', { month: 'long' })}, ${d.getFullYear()}`;
+  view(`${wHead('✏️', 'c-sky', 'Writing 1 · Parts B–C · Module 1: Being a Good Child', 'Write the Paragraph')}
+  ${partNav('w2')}
+  <div class="skill"><b>Part 2: Write a paragraph with at least six sentences</b><p>Use your answers from Part 1. Follow the format of your teacher's example and write it on writing paper.</p></div>
+  <div class="learn-card"><h4><span class="n">1</span>My paragraph</h4>
+    ${ans.length ? `<div class="paper"><div class="pdate">${date}</div><div class="ptitle">My Favourite Place at School</div><p class="pbody">${ans.map((s, i) => `<span class="seg" data-k="${i}">${fmt(s)}</span>`).join(' ')}</p></div>
+      <p class="ok-line">${ready ? `✓ ${ans.length} sentences · date · title · indent` : '⚠️ Some answers are missing. Go back to Part 1 to finish them.'}</p>
+      <div class="center btn-row"><button class="pill next" id="readP">🔈 Read my paragraph</button><button class="pill" id="toP1">✎ Change my answers</button></div>`
+      : `<p class="muted">You haven't planned yet.</p><div class="center"><button class="pill next" id="toP1">Go to Part 1: Plan →</button></div>`}
   </div>
-  <div class="learn-card"><h4><span class="n">3</span>Checklist</h4>${W.checklist.map(([q, eg]) => `<label class="check"><input type="checkbox"><span><b>${esc(q)}</b><br><small>${esc(eg)}</small></span></label>`).join('')}</div>
-  <div class="center"><button class="pill next" id="goQ">Rules quiz (10) →</button></div>`);
-  $('#bk').onclick = home;
-  app.querySelectorAll('.rule .tap').forEach(el => el.onclick = () => say(el.textContent));
-  const sentence = r => `We ${r[0]} ${r[1]} ${place.prep} ${place.p}.`;
-  const draw = () => {
-    app.querySelectorAll('#cP .chip').forEach(c => c.classList.toggle('on', place && W.places[+c.dataset.i] === place));
-    app.querySelectorAll('#cR .chip').forEach(c => c.classList.toggle('on', chosen.includes(+c.dataset.i)));
-    if (!place || !chosen.length) { $('#out').innerHTML = '<span class="muted">Your rules will appear here.</span>'; return; }
-    $('#out').innerHTML = `<p><b>Place:</b> ${place.e} ${place.p}</p>` + chosen.map((k, n) => { const r = place.rules[k]; return `<div class="rule"><div><b>Rule ${n + 1}:</b> ${esc(sentence(r))}</div><div><b>Reason:</b> ${esc(r[2])}</div></div>`; }).join('') + `<small>Look: <b>${place.prep}</b> ${place.p} · <b>must</b> / <b>mustn't</b> · a reason for each rule ✓</small>`;
-  };
-  app.querySelectorAll('#cP .chip').forEach(c => c.onclick = () => {
-    sTap(); place = W.places[+c.dataset.i]; chosen = [];
-    $('#cR').innerHTML = place.rules.map((r, i) => `<button class="chip" data-i="${i}">${r[0] === 'must' ? '✅' : '🚫'} We <b>${r[0]}</b> ${esc(r[1])} ${place.prep} ${place.p}.</button>`).join('');
-    app.querySelectorAll('#cR .chip').forEach(b => b.onclick = () => { sTap(); const i = +b.dataset.i; const k = chosen.indexOf(i); if (k >= 0) chosen.splice(k, 1); else { chosen.push(i); if (chosen.length > 2) chosen.shift(); } draw(); });
-    draw();
-  });
-  $('#readOut').onclick = () => { if (!place || !chosen.length) return popText('Choose a place and rules!'); synth(chosen.map((k, n) => { const r = place.rules[k]; return `Rule ${n + 1}. ${sentence(r)} ${r[2]}`; }).join(' ')); };
+  <div class="learn-card"><h4><span class="n">2</span>Format checklist</h4>${W1.format.map((x, i) => `<label class="check"><input type="checkbox" data-c="${i}"><span>${esc(x)}</span></label>`).join('')}
+    <p class="ptip">Your teacher marks: ${W1.marks.map(m => `<b>${m}</b>`).join(' · ')}</p></div>
+  <div class="learn-card" id="modelCard"><h4><span class="n">3</span>Teacher's model</h4><div class="reader">${readerBar()}${mhtml}</div>
+    <p class="ptip">💡 The teacher's example has 6 sentences. Look at the underlined parts in your worksheet: those are the parts you change for your own place.</p></div>
+  <div class="learn-card"><h4><span class="n">4</span>Fix it! Find the mistakes</h4><p>Good writers check their work. Can you find the wrong word in each sentence?</p>
+    <div class="center"><button class="pill next" id="goFix">Play Fix it! (12) →</button></div></div>
+  <div class="center btn-row"><button class="pill next" id="goQ">Paragraph quiz (10) →</button><button class="pill c-mint" id="goP3">Next: Part 3, places like home →</button></div>`);
+  $('#bk').onclick = home; wireNav();
+  if (ans.length) {
+    let playing = false;
+    const hl = i => app.querySelectorAll('.pbody .seg').forEach(e => e.classList.toggle('on', +e.dataset.k === i));
+    const run = i => { if (!playing || i >= ans.length) { playing = false; hl(-1); return; } hl(i); synth(ans[i], () => setTimeout(() => run(i + 1), 250)); };
+    app.querySelectorAll('.pbody .seg').forEach(e => e.onclick = () => { playing = false; hl(+e.dataset.k); synth(ans[+e.dataset.k], () => hl(-1)); });
+    $('#readP').onclick = () => { stopSay(); playing = true; run(0); };
+  }
+  $('#toP1').onclick = writingPlan;
+  wireReader($('#modelCard'), segs);
+  $('#goFix').onclick = () => startQuiz('w2fix');
   $('#goQ').onclick = () => startQuiz('w2');
+  $('#goP3').onclick = writingHome;
 }
+
+/* ---- Part 3: places like home ---- */
+function writingHome() {
+  view(`${wHead('🏡', 'c-mint', W2.module, W2.title)}
+  ${partNav('w3')}
+  <div class="skill"><p class="tap" id="intro">${esc(W2.intro)}</p></div>
+  <div class="learn-card"><h4><span class="n">1</span><span class="tap q">Name three places which you see as your 'home'.</span></h4>
+    <div class="chips" id="cP"></div><div class="frame" id="threeOut"></div>
+    <p class="ptip">💡 Remember to write <b>the</b>: <b>the</b> school, <b>the</b> library, <b>the</b> park.</p></div>
+  <div class="learn-card"><h4><span class="n">2</span><span class="tap q">How do you feel when you are away from home?</span></h4>
+    <div class="chips" id="cF">${W2.feels.map(([f, e]) => `<button class="chip" data-v="${f}">${e} ${f}</button>`).join('')}</div>
+    <div class="frame" id="feelOut"></div><p class="ptip">🖍️ Draw a picture of it in your book.</p></div>
+  <div class="learn-card"><h4><span class="n">3</span>Action time! Write TWO rules and the reasons</h4>
+    <p class="ptip">💡 ${esc(W2.ruleTip)}</p>
+    <table class="tbl rules-tbl"><tr><th>Places like home</th><th>Rules</th></tr>
+      <tr><td>e.g. 🌳 the park</td><td>${W2.example.map(e => `<div class="rl"><span class="tap">${esc(e[2])}</span> <small>(rule)</small><br><span class="tap rsn">${esc(e[3])}</span> <small>(reason)</small></div>`).join('')}</td></tr>
+      <tbody id="ruleRows"></tbody></table>
+    <div class="center btn-row"><button class="pill next" id="readR">🔈 Read my rules</button></div></div>
+  <div class="learn-card"><h4><span class="n">4</span>Checklist for revising and editing</h4><p>Tick ✓ or cross ✗. Correct your mistakes if there are any.</p>
+    <div id="chk"></div><p class="ptip">Your teacher marks: <b>Content /15</b> · <b>Language /15</b> · <b>Total /30</b></p></div>
+  <div class="center btn-row"><button class="pill next" id="goQ">Rules quiz (10) →</button><button class="pill c-sky" id="goFix">Fix it! (12) →</button></div>`);
+  $('#bk').onclick = home; wireNav();
+  app.querySelectorAll('.tap').forEach(el => el.onclick = () => say(el.textContent));
+  const placeBy = n => W2.places.find(x => x.p === n);
+  const sentence = (pl, r) => `We ${r[0]} ${r[1]} ${pl.prep} ${pl.p}.`;
+  const draw = () => {
+    $('#cP').innerHTML = W2.places.map(pl => `<button class="chip ${W3S.places.includes(pl.p) ? 'on' : ''}" data-v="${pl.p}">${pl.e} ${pl.p}</button>`).join('');
+    $('#threeOut').innerHTML = ['(a)', '(b)', '(c)'].map((l, i) => `<div>${l} ${W3S.places[i] ? `<b>${esc(W3S.places[i])}</b>` : '<span class="blank"></span>'}</div>`).join('');
+    app.querySelectorAll('#cF .chip').forEach(c => c.classList.toggle('on', c.dataset.v === W3S.feel));
+    $('#feelOut').innerHTML = W3S.feel ? (W3S.feel === 'I miss my family' ? 'When I am away from home, I miss my family.' : `When I am away from home, I feel ${W3S.feel}.`) : '<span class="muted">When I am away from home, I feel ___.</span>';
+    $('#ruleRows').innerHTML = W3S.places.length ? W3S.places.map((n, i) => { const pl = placeBy(n); const ch = W3S.rules[n] || [];
+      return `<tr><td><b>${i + 1}</b> ${pl.e} ${esc(n)}</td><td><div class="chips col">${pl.rules.map((r, k) => `<button class="chip sm ${ch.includes(k) ? 'on' : ''}" data-pl="${esc(n)}" data-k="${k}">${r[0] === 'must' ? '✅' : '🚫'} ${esc(sentence(pl, r))}</button>`).join('')}</div>
+        ${ch.map(k => `<div class="rl"><span>${esc(sentence(pl, pl.rules[k]))}</span> <small>(rule)</small><br><span class="rsn">${esc(pl.rules[k][2])}</span> <small>(reason)</small></div>`).join('')}</td></tr>`; }).join('')
+      : '<tr><td colspan="2"><span class="muted">Choose three places in question 1 first.</span></td></tr>';
+    $('#chk').innerHTML = W2.checklist.map(([q, eg], i) => `<div class="check2"><div><b>${esc(q)}</b><br><small>e.g. ${esc(eg)}</small></div><div class="tx"><button class="tick ${W3S.checks[i] === 1 ? 'on' : ''}" data-i="${i}" data-v="1">✓</button><button class="tick x ${W3S.checks[i] === 0 ? 'on' : ''}" data-i="${i}" data-v="0">✗</button></div></div>`).join('');
+    app.querySelectorAll('#cP .chip').forEach(c => c.onclick = () => { sTap(); const v = c.dataset.v, j = W3S.places.indexOf(v); if (j >= 0) W3S.places.splice(j, 1); else { if (W3S.places.length >= 3) return popText('Only three places!'); W3S.places.push(v); } save(); draw(); });
+    app.querySelectorAll('#ruleRows .chip').forEach(c => c.onclick = () => { sTap(); const n = c.dataset.pl, k = +c.dataset.k; const ch = W3S.rules[n] = W3S.rules[n] || []; const j = ch.indexOf(k); if (j >= 0) ch.splice(j, 1); else { ch.push(k); if (ch.length > 2) ch.shift(); } save(); draw(); const pl = placeBy(n); if (j < 0) synth(sentence(pl, pl.rules[k]) + ' ' + pl.rules[k][2]); });
+    app.querySelectorAll('.tick').forEach(b => b.onclick = () => { sTap(); W3S.checks[+b.dataset.i] = +b.dataset.v; save(); draw(); if (+b.dataset.v === 0) popText('Fix it and tick again!'); });
+  };
+  app.querySelectorAll('#cF .chip').forEach(c => c.onclick = () => { sTap(); W3S.feel = c.dataset.v; save(); draw(); synth($('#feelOut').textContent); });
+  draw();
+  $('#readR').onclick = () => { const out = []; W3S.places.forEach(n => { const pl = placeBy(n); (W3S.rules[n] || []).forEach(k => out.push(`${sentence(pl, pl.rules[k])} ${pl.rules[k][2]}`)); }); out.length ? synth(out.join(' ')) : popText('Choose your rules first!'); };
+  $('#goQ').onclick = () => startQuiz('w3');
+  $('#goFix').onclick = () => startQuiz('w3fix');
+}
+
 
 /* ================= SPELLING BEE ================= */
 const SPELL_POOL = () => WORDS.filter(x => /^[a-z]{3,9}$/i.test(x.w));
@@ -419,20 +470,22 @@ function prep(q) {
   return q;
 }
 const keyOf = q => (q.listen ? 'L:' + q.listen : q.text + '|' + (q.answer || ''));
-const QSETS = { w1: W1Q, w2: WRITING.t2.qs };
+const QSETS = { w1: WRITING.t1.planQuiz, w2: [...WRITING.t1.paraQuiz, ...WRITING.t1.planQuiz.slice(0, 4), ...shuffle(WRITING.t1.fix).slice(0, 3)], w2fix: WRITING.t1.fix, w3: WRITING.t2.qs, w3fix: WRITING.t2.fix };
 function buildSet(mode) {
   const qs = []; const seen = new Set();
   const push = q => { if (!q) return false; const k = keyOf(q); if (seen.has(k)) return false; seen.add(k); qs.push(q); return true; };
   if (mode === 'mock') {
     UNITS.forEach(u => shuffle(bank(u.id)).slice(0, u.group === 'ple' ? 3 : 2).forEach(push));
     READING.forEach(r => shuffle(bank(r.id)).slice(0, 1).forEach(push));
-    shuffle(WRITING.t2.qs).slice(0, 1).forEach(q => push({ ...q, topic: 'w2' }));
+    shuffle(WRITING.t2.qs).slice(0, 1).forEach(q => push({ ...q, topic: 'w3' }));
+    shuffle(WRITING.t1.planQuiz).slice(0, 1).forEach(q => push({ ...q, topic: 'w1' }));
+    shuffle([...WRITING.t1.fix, ...WRITING.t2.fix]).slice(0, 1).forEach(q => push({ ...q, topic: 'w2fix' }));
     let g = 0; while (qs.length < 25 && g++ < 80) push(shuffle(bank(pick(UNITS).id))[0]);
     return shuffle(qs).slice(0, 25).map(prep);
   }
   if (mode === 'listen') { let g = 0; while (qs.length < 10 && g++ < 200) push(listenQ(WORDS)); return qs.map(prep); }
   if (mode === 'mistakes') return shuffle(S.mistakes).slice(0, 10).map(q => prep({ ...q, fromMist: 1 }));
-  if (QSETS[mode]) return shuffle(QSETS[mode]).slice(0, 10).map(q => prep({ ...q, topic: mode }));
+  if (QSETS[mode]) return shuffle(QSETS[mode]).slice(0, /fix/.test(mode) ? 12 : 10).map(q => prep({ ...q, topic: mode }));
   const t = ALL[mode];
   if (t.kind === 'reading') return bank(mode).map(prep);
   const b = shuffle(bank(mode));
@@ -440,7 +493,9 @@ function buildSet(mode) {
   if (t.words) push(listenQ(WORDS.filter(x => x.u === mode)));
   return qs.map(prep);
 }
-const topicTitle = id => id === 'w1' ? 'Writing Task 1' : id === 'w2' ? 'Writing Task 2' : ALL[id] ? ALL[id].title : '';
+const WT = { w1: 'Writing Part 1: Plan', w2: 'Writing Part 2: Paragraph', w2fix: 'Fix it! (Writing 1)', w3: 'Writing Part 3: Places like home', w3fix: 'Fix it! (Places like home)' };
+const topicTitle = id => WT[id] || (ALL[id] ? ALL[id].title : '');
+const wBack = id => WPAGES[id.replace('fix', '')];
 function title(mode) { return mode === 'mock' ? 'Mock exam' : mode === 'listen' ? 'Listen & choose' : mode === 'mistakes' ? 'Mistake book' : topicTitle(mode); }
 
 function startQuiz(mode) {
@@ -449,7 +504,7 @@ function startQuiz(mode) {
   if (!Q.qs.length) return home();
   showQ();
 }
-const HINT = q => q.type === 'order' ? 'Start with the person or "Don\'t". A sentence starts with a capital letter and ends with a full stop.' : q.type === 'multi' ? 'There is more than one answer.' : 'Put each answer into the sentence and read it aloud. Which one sounds right?';
+const HINT = q => q.type === 'fix' ? 'Read it aloud slowly. Look for a spelling mistake or a wrong small word (in / on / at, -s, -ing, a capital letter).' : q.type === 'order' ? 'Start with the person or "Don\'t". A sentence starts with a capital letter and ends with a full stop.' : q.type === 'multi' ? 'There is more than one answer.' : 'Put each answer into the sentence and read it aloud. Which one sounds right?';
 
 function showQ() {
   const q = Q.qs[Q.i]; Q.tries = 0; Q.done = false; Q.sel = new Set(); Q.built = [];
@@ -459,6 +514,7 @@ function showQ() {
   if (q.type === 'mc') area = `${q.listen ? `<div class="qvis"><button class="big-ear" id="ear">🔈<small>Hear it again</small></button></div>` : ''}<div class="choices ${long ? 'long' : ''}">${q.choices.map((c, i) => `<button class="choice" data-c="${i}"><span class="lt">${LET[i]}</span><span>${esc(c)}</span></button>`).join('')}</div>`;
   if (q.type === 'multi') area = `<p class="multi-tip">Choose ALL the right answers, then tap Check.</p><div class="choices multi ${long ? 'long' : ''}">${q.choices.map((c, i) => `<button class="choice" data-c="${i}"><span class="lt">${LET[i]}</span><span>${esc(c)}</span></button>`).join('')}</div><div class="qbar"><button class="pill next" id="okMulti">Check</button></div>`;
   if (q.type === 'order') area = `<p class="multi-tip">Tap the word cards in the right order. Tap a card at the top to put it back.</p><div class="build" id="build"></div><div class="tiles" id="tiles"></div><div class="qbar"><button class="pill" id="clr">↺ Clear</button><button class="pill next" id="okOrder">Check</button></div>`;
+  if (q.type === 'fix') area = `<p class="multi-tip">Read the sentence. One word is wrong. Tap it!</p><div class="fixrow" id="fixrow">${q.words.map((w, i) => `<button class="fword" data-f="${i}">${esc(w)}</button>`).join('')}</div>`;
   view(`
   <div class="quiz-top"><button class="back" id="qx">✕ ${title(Q.mode)}</button><div class="progress"><i style="width:${(Q.i / Q.qs.length) * 100}%"></i></div><div class="qcount">${Q.i + 1}/${Q.qs.length}</div></div>
   <div class="qcard">
@@ -469,7 +525,7 @@ function showQ() {
     <div id="fb"></div>
     <div class="qbar">${!Q.exam ? '<button class="pill" id="hintBtn">💡 Hint</button>' : ''}<button class="pill next" id="nextBtn" style="display:none">Next →</button></div>
   </div>`);
-  $('#qx').onclick = () => (ALL[Q.mode] ? topic(Q.mode) : Q.mode === 'w1' ? writing1() : Q.mode === 'w2' ? writing2() : home());
+  $('#qx').onclick = () => (ALL[Q.mode] ? topic(Q.mode) : WT[Q.mode] ? wBack(Q.mode)() : home());
   $('#spk').onclick = () => q.listen ? say(q.listen) : say(q.text);
   if (q.listen) { $('#ear').onclick = () => say(q.listen); setTimeout(() => say(q.listen), 350); }
   if ($('#hintBtn')) $('#hintBtn').onclick = () => { $('#fb').innerHTML = `<div class="feedback hint">${MASCOT.happy}<div>Hint: ${q.hint || HINT(q)}</div></div>`; };
@@ -479,6 +535,7 @@ function showQ() {
     app.querySelectorAll('.choice').forEach(b => b.onclick = () => { if (Q.done) return; sTap(); const i = +b.dataset.c; Q.sel.has(i) ? Q.sel.delete(i) : Q.sel.add(i); b.classList.toggle('sel'); });
     $('#okMulti').onclick = () => { if (Q.done || !Q.sel.size) return; const picked = [...Q.sel].map(i => q.choices[i]); const ok = picked.length === q.answers.length && picked.every(p => q.answers.includes(p)); answer(ok, null, picked.join(', ')); };
   }
+  if (q.type === 'fix') app.querySelectorAll('.fword').forEach(b => b.onclick = () => { if (Q.done || b.disabled) return; answer(+b.dataset.f === q.bad, b, b.textContent); });
   if (q.type === 'order') {
     const drawT = () => {
       $('#build').innerHTML = Q.built.length ? Q.built.map((o, k) => `<button class="tile in" data-b="${k}">${esc(o.x)}</button>`).join('') : '<span class="ph">Tap the word cards below…</span>';
@@ -490,6 +547,11 @@ function showQ() {
     $('#clr').onclick = () => { if (Q.done) return; Q.built = []; drawT(); };
     $('#okOrder').onclick = () => { if (Q.done) return; if (Q.built.length < q.tiles.length) { popText('Use all the cards!'); return; } const s = Q.built.map(o => o.x).join(' '); answer(s === q.answer, null, s); };
   }
+}
+function showFixed(q) {
+  app.querySelectorAll('.fword').forEach(b => { b.disabled = true; if (+b.dataset.f === q.bad) { b.classList.remove('wrong'); b.classList.add('right'); b.innerHTML = `<s>${esc(q.words[q.bad])}</s> ${esc(q.fix)}`; } });
+  const r = $('#fixrow'); r && r.insertAdjacentHTML('afterend', `<p class="fixed">✓ ${q.words.map((w, i) => i === q.bad ? `<mark>${esc(q.fix)}</mark>` : esc(w)).join(' ')}</p>`);
+  if (!Q.exam) synth(q.answer);
 }
 const correctText = q => q.type === 'multi' ? q.answers.join(', ') : q.answer;
 
@@ -505,6 +567,7 @@ function answer(ok, btn, given) {
     if (q.type === 'mc') app.querySelectorAll('.choice').forEach(c => { if (c !== btn) c.classList.add('dim'); });
     if (q.type === 'multi') app.querySelectorAll('.choice').forEach(c => c.classList.add(q.answers.includes(q.choices[+c.dataset.c]) ? 'right' : 'dim'));
     if (q.type === 'order') $('#build').classList.add('right');
+    if (q.type === 'fix') showFixed(q);
     sGood(); if (first) confetti();
     popText(pick(['Well done!', 'Great job!', 'Super!', 'Brilliant!', 'Correct!']));
     fb.innerHTML = Q.exam ? '' : `<div class="feedback good">${MASCOT.wink}<div>${first ? 'Correct! +1 ★' : 'Correct! Next time, first try!'}${q.explain ? `<div class="exp">${esc(q.explain)}</div>` : ''}</div></div>`;
@@ -525,7 +588,8 @@ function answer(ok, btn, given) {
       if (Q.exam) { setTimeout(next, 700); return; }
       if (q.type === 'mc') app.querySelectorAll('.choice').forEach(c => { if (q.choices[+c.dataset.c] === q.answer) c.classList.add('right'); else if (c !== btn) c.classList.add('dim'); });
       if (q.type === 'multi') app.querySelectorAll('.choice').forEach(c => { c.classList.remove('sel'); c.classList.add(q.answers.includes(q.choices[+c.dataset.c]) ? 'right' : 'dim'); });
-      fb.innerHTML = `<div class="feedback bad">${MASCOT.sad}<div>The answer is <span class="hl">${esc(correctText(q))}</span>. It's in your mistake book now, so you can try again later!${q.explain ? `<div class="exp">${esc(q.explain)}</div>` : ''}</div></div>`;
+      if (q.type === 'fix') showFixed(q);
+      fb.innerHTML = `<div class="feedback bad">${MASCOT.sad}<div>The answer is <span class="hl">${esc(correctText(q))}</span>${/[.!?]$/.test(correctText(q)) ? '' : '.'} It's in your mistake book now, so you can try again later!${q.explain ? `<div class="exp">${esc(q.explain)}</div>` : ''}</div></div>`;
       $('#nextBtn').style.display = '';
     } else {
       fb.innerHTML = `<div class="feedback hint">${MASCOT.happy}<div>Nearly! Try again.<div class="exp">Hint: ${q.hint || HINT(q)}</div></div></div>`;
@@ -559,7 +623,7 @@ function result() {
   if (ratio >= .7) { confetti(); setTimeout(confetti, 500); sGood(); }
   $('#again').onclick = () => startQuiz(Q.mode);
   $('#hm').onclick = home;
-  if ($('#lrn')) $('#lrn').onclick = () => Q.mode === 'w1' ? writing1() : Q.mode === 'w2' ? writing2() : topic(Q.mode);
+  if ($('#lrn')) $('#lrn').onclick = () => WT[Q.mode] ? wBack(Q.mode)() : topic(Q.mode);
 }
 
 function stickers() {

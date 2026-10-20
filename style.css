@@ -291,3 +291,53 @@ main{max-width:1100px;margin:0 auto;padding:18px 18px calc(40px + env(safe-area-
 .pv.next .bl{left:88px;top:44px}
 .pv.near .bx{left:72px}.pv.near .bl{left:0;top:44px}
 .pv.between .bx{left:4px;width:38px}.pv.between .b2{left:78px}.pv.between .bl{left:46px;top:44px}
+
+/* ===== writing parts ===== */
+.part-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 16px}
+.part-nav .mode-btn{min-height:64px;line-height:1.15;font-size:18px}
+.part-nav .mode-btn small{font-size:13px;opacity:.75;font-weight:600}
+.part-nav .mode-btn.on{outline:4px solid var(--blue-d);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chips.col{flex-direction:column;align-items:stretch}
+.chip{font:inherit;font-size:19px;font-weight:600;background:#fff;border:3px solid var(--line);border-radius:999px;padding:10px 18px;min-height:52px;box-shadow:0 3px 0 #B7DCF8;color:inherit;text-align:left}
+.chip.sm{font-size:17px;border-radius:18px;padding:8px 14px;min-height:48px}
+.chip.on{background:#DDF0FF;border-color:var(--blue-d);box-shadow:0 3px 0 var(--blue-d)}
+.chip:active{transform:translateY(2px)}
+.frame{background:#FFFDF4;border:2px dashed #E9C98B;border-radius:16px;padding:12px 16px;font-family:Andika,sans-serif;font-size:21px;line-height:1.6;margin:8px 0}
+.frame .blank{display:inline-block;width:180px;border-bottom:2px solid #c9b48a;height:1.1em}
+.ptip{color:#4D6B85;font-size:17px;margin:8px 0 0}
+.muted{color:#8AA3B8}
+.red-pen{margin-left:8px;font-size:13px;color:#fff;background:#E2626B;border-radius:999px;padding:2px 10px;vertical-align:middle}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:16px 0}
+.paper{background:#fff repeating-linear-gradient(#fff 0 39px,#CFE6F8 39px 41px);border:2px solid var(--line);border-radius:16px;padding:16px 20px 20px;font-family:Andika,sans-serif;font-size:21px;line-height:41px}
+.paper .pdate{text-align:right}
+.paper .ptitle{text-align:center;font-weight:700;text-decoration:underline}
+.paper .pbody{margin:0;text-indent:2.2em}
+.paper .seg{cursor:pointer;border-radius:6px}
+.paper .seg.on{background:#FFF1A8}
+.ok-line{font-weight:600;color:#3E7A55}
+.check{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;font-size:19px;border-bottom:1px dashed var(--line)}
+.check input{width:28px;height:28px;flex:none;accent-color:var(--blue-d)}
+.check2{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px dashed var(--line);font-size:18px}
+.check2 small{color:#5D7890;font-size:16px}
+.check2 .tx{display:flex;gap:8px;flex:none}
+.tick{width:56px;height:56px;border-radius:16px;border:3px solid var(--line);background:#fff;font-size:26px;font-weight:700;color:#3E9A5F}
+.tick.x{color:#D9545E}
+.tick.on{background:#E3F7E9;border-color:#3E9A5F}
+.tick.x.on{background:#FDE6E8;border-color:#D9545E}
+.rules-tbl{width:100%;border-collapse:collapse;font-size:18px}
+.rules-tbl th,.rules-tbl td{border:2px solid var(--line);padding:10px;vertical-align:top;text-align:left}
+.rules-tbl td:first-child{width:28%;font-weight:600}
+.rl{background:#F6FBFF;border-radius:12px;padding:8px 10px;margin:8px 0;font-family:Andika,sans-serif;line-height:1.5}
+.rl .rsn{color:#2F6E9E}
+.rl small{color:#8AA3B8;font-family:Fredoka,sans-serif}
+.fixrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0}
+.fword{font-family:Andika,sans-serif;font-size:27px;background:#fff;border:3px solid var(--line);border-radius:16px;padding:8px 14px;min-height:62px;min-width:52px;box-shadow:0 4px 0 #B7DCF8;color:inherit}
+.fword:active{transform:translateY(3px);box-shadow:0 1px 0 #B7DCF8}
+.fword.wrong{background:#FDE6E8;border-color:#D9545E;opacity:.7}
+.fword.right{background:#E3F7E9;border-color:#3E9A5F}
+.fword.right s{color:#D9545E}
+.fword:disabled{cursor:default}
+.fixed{text-align:center;font-family:Andika,sans-serif;font-size:23px;margin:4px 0 8px}
+.fixed mark{background:#C9F0D6;border-radius:6px;padding:0 4px}
+@media (max-width:600px){.part-nav .mode-btn{font-size:15px;min-height:58px}.chip{font-size:17px}.fword{font-size:22px;min-height:54px}.frame,.paper{font-size:18px}.rules-tbl td:first-child{width:32%}}
